@@ -18,6 +18,7 @@ from chronograph.config import get_config
 from chronograph.engine import ChronoGraphEngine
 from chronograph.graph_client import HydraClient
 from chronograph.onchain.onchain_ingest import OnChainIngestor
+from chronograph.ingestion.conversational_ingest import ConversationalIngestor
 
 st.set_page_config(
     page_title="ChronoGraph · Temporal Agent Memory on HydraDB",
@@ -41,7 +42,6 @@ st.markdown(
         color: #F3F4F6;
     }
     
-    /* Headers & Brand */
     h1, h2, h3, h4 {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
@@ -93,12 +93,10 @@ st.markdown(
         color: #FF5719;
     }
     
-    /* Code & Cypher Boxes */
     code, pre {
         font-family: 'JetBrains Mono', monospace !important;
     }
     
-    /* Button Customization */
     .stButton>button {
         background: #FF5719 !important;
         color: #FFFFFF !important;
@@ -114,7 +112,6 @@ st.markdown(
         box-shadow: 0 0 16px rgba(255, 87, 25, 0.4) !important;
     }
     
-    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: #080B10;
@@ -164,11 +161,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 @st.cache_resource
 def get_engine():
     client = HydraClient()
     engine = ChronoGraphEngine()
+    # Auto-ingest baseline datasets if graph is fresh
+    stats = client.get_graph_stats()
+    if stats.get("entities", 0) < 10:
+        OnChainIngestor(client).ingest_all()
+        ConversationalIngestor(client).ingest_all()
     return client, engine
+
 
 client, engine = get_engine()
 config = get_config()
@@ -190,11 +194,11 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### 🔄 Ingestion & Sync")
-    if st.button("Sync On-Chain Protocols", use_container_width=True):
-        with st.spinner("Ingesting verified Ethereum protocols into HydraDB..."):
-            ingestor = OnChainIngestor(client)
-            stats = ingestor.ingest_all()
-            st.success(f"Ingested! {stats.get('entities', 0)} entities, {stats.get('facts', 0)} facts.")
+    if st.button("Sync All Datasets (On-Chain + Chat)", use_container_width=True):
+        with st.spinner("Ingesting verified protocols & multi-session chats into HydraDB..."):
+            s1 = OnChainIngestor(client).ingest_all()
+            s2 = ConversationalIngestor(client).ingest_all()
+            st.success(f"Ingested! {s2.get('entities', 0)} entities, {s2.get('facts', 0)} facts.")
 
     st.markdown("---")
     st.markdown(
@@ -238,8 +242,8 @@ with col3:
     st.markdown(
         f"""
     <div class="metric-card">
-        <div class="metric-label">Temporal Chains</div>
-        <div class="metric-value">4 Active</div>
+        <div class="metric-label">Sessions Tracked</div>
+        <div class="metric-value">{stats.get('sessions', 0)} Active</div>
     </div>
     """,
         unsafe_allow_html=True,
@@ -270,13 +274,15 @@ tab_query, tab_graph, tab_bench = st.tabs(
 # Tab 1: Interactive Query
 with tab_query:
     st.markdown("### Test Multi-Session Memory, Temporal Reasoning & Abstention")
-    st.caption("Ask questions about real on-chain protocols, smart contracts, or user history.")
+    st.caption("Ask questions about real on-chain protocols, smart contracts, or multi-session user history.")
 
     scenarios = [
+        "Where did Jordan Lee live before moving to Zurich?",
         "How did Uniswap evolve from V1 to V2 to V3 and V4?",
+        "Who is Jordan Lee's current engineering manager?",
         "What caused the Euler Finance exploit and was the stolen money recovered?",
         "What was the genesis allocation percentage for the Solana Foundation?",
-        "Where did Jordan Lee live before moving to Zurich?",
+        "What is Samantha's favorite programming language?",
     ]
 
     selected_scenario = st.selectbox(
@@ -287,7 +293,7 @@ with tab_query:
     query_input = st.text_input(
         "Question:",
         value=selected_scenario if selected_scenario != "-- Select Scenario --" else "",
-        placeholder="e.g. How did Uniswap evolve over time?",
+        placeholder="e.g. Where did Jordan Lee live before moving to Zurich?",
     )
 
     if st.button("🚀 Execute Graph Retrieval", use_container_width=True) and query_input:
@@ -380,10 +386,11 @@ with tab_graph:
 
             # Entity nodes (Hydra Orange)
             for e in ent_rows:
+                e_name = str(e.get("name") or e.get("id") or "Entity")
                 net.add_node(
                     e["id"],
-                    label=e["name"],
-                    title=f"Entity: {e['name']}\nType: {e.get('type')}",
+                    label=e_name,
+                    title=f"Entity: {e_name}\nType: {e.get('type')}",
                     color="#FF5719",
                     size=26,
                     shape="dot",
@@ -393,11 +400,12 @@ with tab_graph:
             for f in fact_rows:
                 is_curr = f.get("valid_to", -1) == -1
                 color = "#10B981" if is_curr else "#F59E0B"
-                label = (f["content"][:32] + "...") if len(f.get("content", "")) > 32 else f.get("content", "")
+                raw_content = str(f.get("content") or f.get("id") or "")
+                label = (raw_content[:32] + "...") if len(raw_content) > 32 else raw_content
                 net.add_node(
                     f["id"],
-                    label=label,
-                    title=f"{'ACTIVE' if is_curr else 'HISTORICAL'}\n{f['content']}",
+                    label=label or "Fact",
+                    title=f"{'ACTIVE' if is_curr else 'HISTORICAL'}\n{raw_content}",
                     color=color,
                     size=16,
                     shape="square" if is_curr else "triangle",
