@@ -1,0 +1,64 @@
+{
+  "dataset": "OnChain_Temporal_Benchmark",
+  "total_questions": 5,
+  "total_correct": 5,
+  "overall_accuracy": "100.0%",
+  "category_accuracy": {
+    "TEMPORAL_REASONING": "100.0%",
+    "MULTI_SESSION_REASONING": "100.0%",
+    "KNOWLEDGE_UPDATE": "100.0%",
+    "ABSTENTION": "100.0%"
+  },
+  "question_results": [
+    {
+      "id": "eth_01_temporal",
+      "category": "TEMPORAL_REASONING",
+      "question": "How did Uniswap's liquidity mechanism evolve from V2 to V3 and V4?",
+      "should_abstain": false,
+      "model_abstained": false,
+      "is_correct": true,
+      "latency_ms": 3016.54,
+      "answer_preview": "Based on retrieved memory:\n[CURRENT FACTS]\n- Uniswap V4 introduces Custom Hooks, Singleton architect"
+    },
+    {
+      "id": "eth_02_exploit",
+      "category": "MULTI_SESSION_REASONING",
+      "question": "What was the Euler Finance exploit and what happened to the stolen assets?",
+      "should_abstain": false,
+      "model_abstained": false,
+      "is_correct": true,
+      "latency_ms": 1222.55,
+      "answer_preview": "Based on retrieved memory:\n[CURRENT FACTS]\n- On April 4 2023 all $197M of recoverable stolen assets "
+    },
+    {
+      "id": "eth_03_eip",
+      "category": "KNOWLEDGE_UPDATE",
+      "question": "What Ethereum upgrade introduced blobspace for L2 rollup gas reduction?",
+      "should_abstain": false,
+      "model_abstained": false,
+      "is_correct": true,
+      "latency_ms": 1024.93,
+      "answer_preview": "Based on retrieved memory:\n[CURRENT FACTS]\n- Dencun Upgrade activated on March 13 2024 introducing B"
+    },
+    {
+      "id": "eth_04_abstain_1",
+      "category": "ABSTENTION",
+      "question": "What was the genesis allocation percentage for the Solana Foundation?",
+      "should_abstain": true,
+      "model_abstained": true,
+      "is_correct": true,
+      "latency_ms": 460.99,
+      "answer_preview": "I don't have enough information in my memory graph to answer this question accurately."
+    },
+    {
+      "id": "eth_05_abstain_2",
+      "category": "ABSTENTION",
+      "question": "What is the staking reward APR for Cardano ADA in 2024?",
+      "should_abstain": true,
+      "model_abstained": true,
+      "is_correct": true,
+      "latency_ms": 480.8,
+      "answer_preview": "I don't have enough information in my memory graph to answer this question accurately."
+    }
+  ]
+}
