@@ -6,9 +6,9 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import List, Optional
 
 from openai import OpenAI
+
 from chronograph.config import get_config
 from chronograph.ingestion.session_parser import ChatSession
 
@@ -21,8 +21,8 @@ class ExtractedFact:
     subject: str
     fact_type: str = "preference"
     confidence: float = 1.0
-    object_: Optional[str] = None
-    relation: Optional[str] = None
+    object_: str | None = None
+    relation: str | None = None
     timestamp: int = 0
 
 
@@ -33,7 +33,7 @@ class FactExtractor:
         self.client = OpenAI(api_key=api_key)
         self.model = self.config.llm.extraction_model
 
-    def extract_facts(self, session: ChatSession) -> List[ExtractedFact]:
+    def extract_facts(self, session: ChatSession) -> list[ExtractedFact]:
         """Extract atomic facts using OpenAI API with structured JSON output."""
         system_prompt = (
             "You are an expert information extraction system. "
@@ -81,7 +81,9 @@ class FactExtractor:
                 return facts
 
             except Exception as e:
-                logger.warning(f"Failed to extract facts (attempt {attempt+1}/{max_retries}): {e}")
+                logger.warning(
+                    f"Failed to extract facts (attempt {attempt + 1}/{max_retries}): {e}"
+                )
                 if attempt < max_retries - 1:
                     time.sleep(base_delay ** (attempt + 1))
                 else:

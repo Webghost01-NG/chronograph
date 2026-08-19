@@ -6,17 +6,17 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 from chronograph.engine import ChronoGraphEngine
-from chronograph.onchain.onchain_ingest import OnChainIngestor
 from chronograph.graph_client import HydraClient
+from chronograph.onchain.onchain_ingest import OnChainIngestor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def run_onchain_benchmark(engine: ChronoGraphEngine) -> Dict[str, Any]:
+def run_onchain_benchmark(engine: ChronoGraphEngine) -> dict[str, Any]:
     """Run real on-chain protocol temporal memory questions."""
     questions = [
         {
@@ -62,8 +62,8 @@ def run_onchain_benchmark(engine: ChronoGraphEngine) -> Dict[str, Any]:
     ]
 
     results = []
-    correct_by_cat: Dict[str, int] = {}
-    total_by_cat: Dict[str, int] = {}
+    correct_by_cat: dict[str, int] = {}
+    total_by_cat: dict[str, int] = {}
 
     for q in questions:
         cat = q["category"]
@@ -85,16 +85,18 @@ def run_onchain_benchmark(engine: ChronoGraphEngine) -> Dict[str, Any]:
         if is_correct:
             correct_by_cat[cat] = correct_by_cat.get(cat, 0) + 1
 
-        results.append({
-            "id": q["id"],
-            "category": cat,
-            "question": q["question"],
-            "should_abstain": q["should_abstain"],
-            "model_abstained": res["should_abstain"],
-            "is_correct": is_correct,
-            "latency_ms": round(elapsed, 2),
-            "answer_preview": res["answer"][:100],
-        })
+        results.append(
+            {
+                "id": q["id"],
+                "category": cat,
+                "question": q["question"],
+                "should_abstain": q["should_abstain"],
+                "model_abstained": res["should_abstain"],
+                "is_correct": is_correct,
+                "latency_ms": round(elapsed, 2),
+                "answer_preview": res["answer"][:100],
+            }
+        )
 
     cat_accuracy = {
         cat: f"{round(correct_by_cat.get(cat, 0) / total_by_cat[cat] * 100, 1)}%"

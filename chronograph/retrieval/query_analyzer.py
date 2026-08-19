@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import logging
 import re
-from enum import Enum
 from dataclasses import dataclass
-from typing import List
+from enum import Enum
+
 from openai import OpenAI
 
 from chronograph.config import get_config
@@ -27,8 +27,8 @@ class QueryCategory(Enum):
 class AnalyzedQuery:
     original: str
     category: QueryCategory
-    entities: List[str]
-    keywords: List[str]
+    entities: list[str]
+    keywords: list[str]
     temporal_cue: bool
     requires_comparison: bool
 
@@ -40,19 +40,39 @@ class QueryAnalyzer:
         api_key = self.llm_config.openai_api_key or "mock-key"
         self.client = OpenAI(api_key=api_key)
 
-    def _detect_cues(self, question: str, cue_words: List[str]) -> bool:
+    def _detect_cues(self, question: str, cue_words: list[str]) -> bool:
         q_lower = question.lower()
         return any(cue in q_lower for cue in cue_words)
 
     def _heuristic_entities_keywords(self, question: str) -> tuple[list[str], list[str]]:
         """Extract capitalized words as entities, other words as keywords."""
         words = re.findall(r"\b\w+\b", question)
-        entities = [w for w in words if w[0].isupper() and w.lower() not in {"what", "where", "when", "how", "who", "why", "did", "is", "was"}]
-        keywords = [w.lower() for w in words if len(w) > 3 and w.lower() not in {"what", "where", "when", "how", "who", "why", "does", "have", "that", "this"}]
+        entities = [
+            w
+            for w in words
+            if w[0].isupper()
+            and w.lower() not in {"what", "where", "when", "how", "who", "why", "did", "is", "was"}
+        ]
+        keywords = [
+            w.lower()
+            for w in words
+            if len(w) > 3
+            and w.lower()
+            not in {"what", "where", "when", "how", "who", "why", "does", "have", "that", "this"}
+        ]
         return entities, keywords
 
     def analyze(self, question: str) -> AnalyzedQuery:
-        temporal_cues = ["before", "after", "changed", "used to", "previously", "when did", "earlier", "originally"]
+        temporal_cues = [
+            "before",
+            "after",
+            "changed",
+            "used to",
+            "previously",
+            "when did",
+            "earlier",
+            "originally",
+        ]
         comparison_cues = ["compare", "difference", "both", "and", "between", "versus", "vs"]
 
         has_temporal = self._detect_cues(question, temporal_cues)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+
 from openai import OpenAI
 
 from chronograph.config import get_config

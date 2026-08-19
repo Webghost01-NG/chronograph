@@ -2,13 +2,11 @@
 
 import hashlib
 import logging
-from typing import List
-from tqdm import tqdm
 
 from chronograph.graph_client import HydraClient, str_to_int_id
-from chronograph.ingestion.session_parser import ChatSession
-from chronograph.ingestion.fact_extractor import ExtractedFact
 from chronograph.ingestion.entity_resolver import EntityResolver
+from chronograph.ingestion.fact_extractor import ExtractedFact
+from chronograph.ingestion.session_parser import ChatSession
 from chronograph.ingestion.temporal_tagger import TemporalRelation
 
 logger = logging.getLogger(__name__)
@@ -26,7 +24,7 @@ class GraphWriter:
         return str_to_int_id(key)
 
     def write_session(
-        self, session: ChatSession, facts: List[ExtractedFact], resolver: EntityResolver
+        self, session: ChatSession, facts: list[ExtractedFact], resolver: EntityResolver
     ) -> None:
         """Write session and facts to HydraDB using valid one-hop edge creation patterns."""
         sess_int_id = str_to_int_id(session.session_id)
@@ -100,15 +98,19 @@ class GraphWriter:
                     ts=fact_ts,
                 )
 
-    def apply_temporal_relations(self, relations: List[TemporalRelation]) -> None:
+    def apply_temporal_relations(self, relations: list[TemporalRelation]) -> None:
         """Apply temporal relations as supersessions (valid_to update + SUPERSEDED_BY edge)."""
         for rel in relations:
             try:
                 old_id = str_to_int_id(rel.old_fact_id)
                 new_id = str_to_int_id(rel.new_fact_id)
-                ts = getattr(rel, "superseded_at", 0) or int(hashlib.md5(str(new_id).encode()).hexdigest()[:8], 16)
+                ts = getattr(rel, "superseded_at", 0) or int(
+                    hashlib.md5(str(new_id).encode()).hexdigest()[:8], 16
+                )
                 reason = getattr(rel, "reason", "updated")
 
                 self.client.supersede_fact(old_id, new_id, reason=reason, superseded_at=ts)
             except Exception as e:
-                logger.error(f"Failed to supersede fact {rel.old_fact_id} with {rel.new_fact_id}: {e}")
+                logger.error(
+                    f"Failed to supersede fact {rel.old_fact_id} with {rel.new_fact_id}: {e}"
+                )

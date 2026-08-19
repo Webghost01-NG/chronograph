@@ -4,21 +4,18 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
-from pathlib import Path
+from typing import Any
 
 from chronograph.config import AppConfig, get_config
 from chronograph.graph_client import HydraClient
-from chronograph.ingestion.session_parser import parse_longmemeval, ChatSession
-from chronograph.ingestion.fact_extractor import FactExtractor, ExtractedFact
 from chronograph.ingestion.entity_resolver import EntityResolver
-from chronograph.ingestion.temporal_tagger import TemporalTagger
 from chronograph.ingestion.graph_writer import GraphWriter
-from chronograph.retrieval.query_analyzer import QueryAnalyzer, AnalyzedQuery, QueryCategory
-from chronograph.retrieval.path_retriever import PathRetriever
-from chronograph.retrieval.temporal_ranker import TemporalRanker, RankedFact
+from chronograph.ingestion.temporal_tagger import TemporalTagger
 from chronograph.retrieval.abstention import AbstentionDetector, AbstentionResult
+from chronograph.retrieval.path_retriever import PathRetriever
+from chronograph.retrieval.query_analyzer import AnalyzedQuery, QueryAnalyzer
 from chronograph.retrieval.subgraph_context import SubgraphContext
+from chronograph.retrieval.temporal_ranker import RankedFact, TemporalRanker
 from chronograph.synthesis.answer_generator import AnswerGenerator
 
 logger = logging.getLogger(__name__)
@@ -27,7 +24,7 @@ logger = logging.getLogger(__name__)
 class ChronoGraphEngine:
     """End-to-end Graph-Native Agent Memory Engine on HydraDB."""
 
-    def __init__(self, config: Optional[AppConfig] = None):
+    def __init__(self, config: AppConfig | None = None):
         self.config = config or get_config()
         self.client = HydraClient(self.config.hydra)
         self.resolver = EntityResolver()
@@ -44,7 +41,7 @@ class ChronoGraphEngine:
         """Verify HydraDB connection."""
         return self.client.wait_for_ready(timeout=15.0)
 
-    def query(self, question: str) -> Dict[str, Any]:
+    def query(self, question: str) -> dict[str, Any]:
         """Execute a graph-native memory query with temporal resolution and abstention."""
         start_time = time.time()
 
@@ -56,9 +53,9 @@ class ChronoGraphEngine:
             analyzed.entities, analyzed.keywords
         )
 
-        paths: List[Dict[str, Any]] = []
-        ranked_facts: List[RankedFact] = []
-        raw_facts: List[Dict[str, Any]] = []
+        paths: list[dict[str, Any]] = []
+        ranked_facts: list[RankedFact] = []
+        raw_facts: list[dict[str, Any]] = []
 
         if not abstention.should_abstain:
             # Step 3: Retrieve Entity Facts for all matched entities in coverage

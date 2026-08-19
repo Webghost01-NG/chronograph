@@ -5,10 +5,11 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any
 
-from neo4j import GraphDatabase, Driver, Session, Result
+from neo4j import Driver, GraphDatabase, Result, Session
 
 from chronograph.config import HydraConfig, get_config
 
@@ -258,8 +259,12 @@ class HydraClient:
         max_len: int = 3,
     ) -> list[dict]:
         """Use algo.SPpaths to find shortest paths between two entities through the fact graph."""
-        src_node = self.run_single("MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=source_name)
-        tgt_node = self.run_single("MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=target_name)
+        src_node = self.run_single(
+            "MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=source_name
+        )
+        tgt_node = self.run_single(
+            "MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=target_name
+        )
         if not src_node or not tgt_node:
             return []
 
@@ -292,7 +297,9 @@ class HydraClient:
         """Check whether query entities exist in the graph and have connected facts."""
         results = {}
         for name in entity_names:
-            node = self.run_single("MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=name)
+            node = self.run_single(
+                "MATCH (e:Entity) WHERE e.name = $name RETURN e.id AS id", name=name
+            )
             if node:
                 facts = self.get_entity_facts(name, current_only=True)
                 results[name] = {

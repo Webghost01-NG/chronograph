@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from chronograph.graph_client import HydraClient, str_to_int_id
 from chronograph.onchain.protocol_data import (
-    ONCHAIN_TEMPORAL_FACTS,
     ONCHAIN_SUPERSEDED_CHAINS,
+    ONCHAIN_TEMPORAL_FACTS,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class OnChainIngestor:
     def __init__(self, client: HydraClient):
         self.client = client
 
-    def ingest_all(self) -> Dict[str, Any]:
+    def ingest_all(self) -> dict[str, Any]:
         """Ingest entities, facts, and supersession chains using one-hop edge patterns."""
         logger.info("Ingesting real on-chain protocol data into HydraDB...")
         root_sess_id = str_to_int_id("session_onchain_genesis")

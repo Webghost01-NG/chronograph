@@ -1,20 +1,21 @@
 import logging
-from typing import List, Tuple, Dict, Any
+from typing import Any
 
 from chronograph.retrieval.query_analyzer import AnalyzedQuery, QueryCategory
 
 logger = logging.getLogger(__name__)
 
+
 class CypherBuilder:
-    def build_query(self, analyzed: AnalyzedQuery) -> List[Tuple[str, Dict[str, Any]]]:
+    def build_query(self, analyzed: AnalyzedQuery) -> list[tuple[str, dict[str, Any]]]:
         queries = []
-        
+
         if not analyzed.entities:
             logger.warning("No entities found for cypher query builder.")
             return queries
 
         # Using -1 as sentinel for valid_to IS NULL (still current)
-        
+
         if analyzed.category == QueryCategory.INFORMATION_EXTRACTION:
             for entity in analyzed.entities:
                 q = (
@@ -22,7 +23,7 @@ class CypherBuilder:
                     "RETURN e.name AS entity, f.content AS fact, f.valid_from AS valid_from, f.valid_to AS valid_to"
                 )
                 queries.append((q, {"entity_name": entity}))
-                
+
         elif analyzed.category == QueryCategory.TEMPORAL_REASONING:
             for entity in analyzed.entities:
                 q = (
@@ -32,16 +33,15 @@ class CypherBuilder:
                     "ORDER BY f.valid_from ASC"
                 )
                 queries.append((q, {"entity_name": entity}))
-                
+
         elif analyzed.category == QueryCategory.MULTI_SESSION_REASONING:
             if len(analyzed.entities) >= 2:
                 for i in range(len(analyzed.entities)):
                     for j in range(i + 1, len(analyzed.entities)):
-                        q = (
-                            "CALL algo.SPpaths($source, $target) YIELD path "
-                            "RETURN path"
+                        q = "CALL algo.SPpaths($source, $target) YIELD path RETURN path"
+                        queries.append(
+                            (q, {"source": analyzed.entities[i], "target": analyzed.entities[j]})
                         )
-                        queries.append((q, {"source": analyzed.entities[i], "target": analyzed.entities[j]}))
             else:
                 for entity in analyzed.entities:
                     q = (
@@ -49,7 +49,7 @@ class CypherBuilder:
                         "RETURN e.name AS entity, f.content AS fact, f.session_id AS session_id"
                     )
                     queries.append((q, {"entity_name": entity}))
-                    
+
         elif analyzed.category == QueryCategory.KNOWLEDGE_UPDATE:
             for entity in analyzed.entities:
                 q = (
@@ -58,7 +58,7 @@ class CypherBuilder:
                     "RETURN path, e.name AS entity"
                 )
                 queries.append((q, {"entity_name": entity}))
-                
+
         elif analyzed.category == QueryCategory.ABSTENTION:
             for entity in analyzed.entities:
                 # Basic check first

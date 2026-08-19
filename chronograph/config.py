@@ -17,9 +17,15 @@ load_dotenv(_PROJECT_ROOT / ".env")
 class HydraConfig:
     """HydraDB connection settings."""
 
-    bolt_uri: str = field(default_factory=lambda: os.getenv("HYDRA_BOLT_URI", "neo4j://127.0.0.1:7687"))
-    http_uri: str = field(default_factory=lambda: os.getenv("HYDRA_HTTP_URI", "http://127.0.0.1:8443"))
-    auth_token: str = field(default_factory=lambda: os.getenv("HYDRA_AUTH_TOKEN", "local-development-token-32-bytes"))
+    bolt_uri: str = field(
+        default_factory=lambda: os.getenv("HYDRA_BOLT_URI", "neo4j://127.0.0.1:7687")
+    )
+    http_uri: str = field(
+        default_factory=lambda: os.getenv("HYDRA_HTTP_URI", "http://127.0.0.1:8443")
+    )
+    auth_token: str = field(
+        default_factory=lambda: os.getenv("HYDRA_AUTH_TOKEN", "local-development-token-32-bytes")
+    )
     graph_namespace: str = "default"
     graph_id: str = "default"
     cell_id: str = "cell-0"
@@ -34,7 +40,9 @@ class HydraConfig:
 class LLMConfig:
     """LLM settings for extraction and synthesis."""
 
-    extraction_model: str = field(default_factory=lambda: os.getenv("EXTRACTION_MODEL", "gpt-4.1-mini"))
+    extraction_model: str = field(
+        default_factory=lambda: os.getenv("EXTRACTION_MODEL", "gpt-4.1-mini")
+    )
     synthesis_model: str = field(default_factory=lambda: os.getenv("SYNTHESIS_MODEL", "gpt-4.1"))
     openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
     max_concurrent_extractions: int = field(

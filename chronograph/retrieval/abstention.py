@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import List, Dict, Any
+from typing import Any
 
 from chronograph.graph_client import HydraClient
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class AbstentionResult:
     should_abstain: bool
     reason: str
-    coverage: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    coverage: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 class AbstentionDetector:
@@ -25,7 +25,7 @@ class AbstentionDetector:
         self.client = client
         self.coverage_threshold = coverage_threshold
 
-    def check(self, entity_names: List[str], keywords: List[str] | None = None) -> AbstentionResult:
+    def check(self, entity_names: list[str], keywords: list[str] | None = None) -> AbstentionResult:
         if not entity_names:
             return AbstentionResult(
                 should_abstain=True,
@@ -33,11 +33,13 @@ class AbstentionDetector:
                 coverage={},
             )
 
-        coverage: Dict[str, Dict[str, Any]] = {}
+        coverage: dict[str, dict[str, Any]] = {}
         has_relevant_fact = False
 
         # Get all known entity names in graph for fuzzy/partial matching
-        all_graph_entities = self.client.run("MATCH (e:Entity) RETURN e.name AS name, e.aliases AS aliases")
+        all_graph_entities = self.client.run(
+            "MATCH (e:Entity) RETURN e.name AS name, e.aliases AS aliases"
+        )
         graph_name_map = {row["name"].lower(): row["name"] for row in all_graph_entities}
 
         matched_canonical_names = set()
