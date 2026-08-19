@@ -384,48 +384,65 @@ with tab_graph:
             net = Network(height="620px", width="100%", bgcolor="#000000", font_color="#F3F4F6")
             net.force_atlas_2based(gravity=-60, central_gravity=0.01, spring_length=120)
 
-            # Entity nodes (Hydra Orange)
+            added_nodes = set()
+
+            # Entity nodes (Hydra Orange) — deduplicated
             for e in ent_rows:
-                e_name = str(e.get("name") or e.get("id") or "Entity")
+                nid = e.get("id")
+                if nid is None or nid in added_nodes:
+                    continue
+                added_nodes.add(nid)
+                e_name = str(e.get("name") or nid)
                 net.add_node(
-                    e["id"],
+                    nid,
                     label=e_name,
-                    title=f"Entity: {e_name}\nType: {e.get('type')}",
+                    title=f"Entity: {e_name}\nType: {e.get('type', 'unknown')}",
                     color="#FF5719",
                     size=26,
                     shape="dot",
                 )
 
-            # Fact nodes (Emerald if valid_to == -1, else Amber)
+            # Fact nodes — deduplicated, skip null-content skeleton nodes
             for f in fact_rows:
-                is_curr = f.get("valid_to", -1) == -1
+                nid = f.get("id")
+                raw_content = f.get("content")
+                if nid is None or nid in added_nodes or not raw_content:
+                    continue  # skip skeleton nodes with no content
+                added_nodes.add(nid)
+                raw_content = str(raw_content)
+                # HydraDB returns None (not -1) for current facts
+                vt = f.get("valid_to")
+                is_curr = vt is None or vt == -1
                 color = "#10B981" if is_curr else "#F59E0B"
-                raw_content = str(f.get("content") or f.get("id") or "")
                 label = (raw_content[:32] + "...") if len(raw_content) > 32 else raw_content
                 net.add_node(
-                    f["id"],
-                    label=label or "Fact",
+                    nid,
+                    label=label,
                     title=f"{'ACTIVE' if is_curr else 'HISTORICAL'}\n{raw_content}",
                     color=color,
                     size=16,
                     shape="square" if is_curr else "triangle",
                 )
 
+            # Edges — only add if both nodes exist
             for ed in edges_subj:
-                net.add_edge(ed["src"], ed["dst"], title="SUBJECT_OF", color="rgba(255, 87, 25, 0.4)", width=1.5)
+                if ed.get("src") in added_nodes and ed.get("dst") in added_nodes:
+                    net.add_edge(ed["src"], ed["dst"], title="SUBJECT_OF", color="rgba(255, 87, 25, 0.4)", width=1.5)
 
             for ed in edges_obj:
-                net.add_edge(ed["src"], ed["dst"], title="OBJECT_OF", color="rgba(148, 163, 184, 0.4)", width=1.5)
+                if ed.get("src") in added_nodes and ed.get("dst") in added_nodes:
+                    net.add_edge(ed["src"], ed["dst"], title="OBJECT_OF", color="rgba(148, 163, 184, 0.4)", width=1.5)
 
             for ed in edges_sup:
-                net.add_edge(
-                    ed["src"],
-                    ed["dst"],
-                    title=f"SUPERSEDED_BY ({ed.get('reason')})",
-                    color="#EF4444",
-                    width=2.5,
-                    dashes=True,
-                )
+                if ed.get("src") in added_nodes and ed.get("dst") in added_nodes:
+                    net.add_edge(
+                        ed["src"],
+                        ed["dst"],
+                        title=f"SUPERSEDED_BY ({ed.get('reason', 'update')})",
+                        color="#EF4444",
+                        width=2.5,
+                        dashes=True,
+                    )
 
             html_file = "/home/web-ghost/chronograph/demo/graph.html"
             net.save_graph(html_file)

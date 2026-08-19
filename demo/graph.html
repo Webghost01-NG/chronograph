@@ -1,0 +1,164 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 620px;
+                 background-color: #000000;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 101, "label": "Alice", "shape": "dot", "size": 26, "title": "Entity: Alice\nType: person"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 102, "label": "Acme", "shape": "dot", "size": 26, "title": "Entity: Acme\nType: org"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 601, "label": "David", "shape": "dot", "size": 26, "title": "Entity: David\nType: person"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 1907100296487619, "label": "EIP-1559", "shape": "dot", "size": 26, "title": "Entity: EIP-1559\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 6142427084317306, "label": "EulerEToken", "shape": "dot", "size": 26, "title": "Entity: EulerEToken\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 8536449543608327, "label": "Elena Rostova", "shape": "dot", "size": 26, "title": "Entity: Elena Rostova\nType: Person"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 9680741720640994, "label": "Zurich", "shape": "dot", "size": 26, "title": "Entity: Zurich\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 15785525016888545, "label": "UniswapV2Factory", "shape": "dot", "size": 26, "title": "Entity: UniswapV2Factory\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 22294713072321196, "label": "Seattle", "shape": "dot", "size": 26, "title": "Entity: Seattle\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 28528226976491247, "label": "UniswapV4PoolManager", "shape": "dot", "size": 26, "title": "Entity: UniswapV4PoolManager\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 37791984663832834, "label": "Ethereum", "shape": "dot", "size": 26, "title": "Entity: Ethereum\nType: Protocol"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 41844686537201618, "label": "Euler Finance", "shape": "dot", "size": 26, "title": "Entity: Euler Finance\nType: Protocol"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 47761907353896915, "label": "Uniswap", "shape": "dot", "size": 26, "title": "Entity: Uniswap\nType: Protocol"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 48384595790908819, "label": "CloudMatrix", "shape": "dot", "size": 26, "title": "Entity: CloudMatrix\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 56403495131013397, "label": "Jordan Lee", "shape": "dot", "size": 26, "title": "Entity: Jordan Lee\nType: Person"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 57297229393865383, "label": "Marco Rossi", "shape": "dot", "size": 26, "title": "Entity: Marco Rossi\nType: Person"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 59683770234446188, "label": "SlateDB", "shape": "dot", "size": 26, "title": "Entity: SlateDB\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 60084872961873799, "label": "Project Hydra", "shape": "dot", "size": 26, "title": "Entity: Project Hydra\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 63295968681121920, "label": "UniswapV1Factory", "shape": "dot", "size": 26, "title": "Entity: UniswapV1Factory\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 66111307550323475, "label": "EIP-4844", "shape": "dot", "size": 26, "title": "Entity: EIP-4844\nType: Contract_Or_Standard"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 66727407251161533, "label": "Atlas", "shape": "dot", "size": 26, "title": "Entity: Atlas\nType: Concept_Or_Entity"}, {"color": "#FF5719", "font": {"color": "#F3F4F6"}, "id": 70469977004259806, "label": "UniswapV3Factory", "shape": "dot", "size": 26, "title": "Entity: UniswapV3Factory\nType: Contract_Or_Standard"}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 201, "label": "Alice works at Acme", "shape": "triangle", "size": 16, "title": "HISTORICAL\nAlice works at Acme"}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 701, "label": "David likes Python", "shape": "triangle", "size": 16, "title": "HISTORICAL\nDavid likes Python"}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 991, "label": "991", "shape": "triangle", "size": 16, "title": "HISTORICAL\n991"}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 992, "label": "992", "shape": "triangle", "size": 16, "title": "HISTORICAL\n992"}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 6019829364950655, "label": "Jordan Lee lives in Seattle, Was...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nJordan Lee lives in Seattle, Washington."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 9163764440993685, "label": "Elena Rostova is Jordan Lee\u0027s en...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nElena Rostova is Jordan Lee\u0027s engineering manager at CloudMatrix."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 9217780178634436, "label": "On March 13 2023 Euler Finance s...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nOn March 13 2023 Euler Finance suffered a $197M exploit via a flawed donation mechanism in eToken.donateToReserve which created unbacked debt without health factor checks."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 13335438440125996, "label": "Jordan Lee moved from Seattle to...", "shape": "square", "size": 16, "title": "ACTIVE\nJordan Lee moved from Seattle to Zurich, Switzerland."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 16992677352275443, "label": "Elena Rostova approved the migra...", "shape": "square", "size": 16, "title": "ACTIVE\nElena Rostova approved the migration to Rust using SlateDB for LSM storage and SuiteSparse GraphBLAS for sparse matrix traversals."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 19068017423476393, "label": "London Hard Fork activated at bl...", "shape": "square", "size": 16, "title": "ACTIVE\nLondon Hard Fork activated at block 12,965,000 introducing base fee burning via EIP-1559 and dynamic block sizing."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 22689460992650779, "label": "Marco Rossi is Jordan Lee\u0027s new ...", "shape": "square", "size": 16, "title": "ACTIVE\nMarco Rossi is Jordan Lee\u0027s new engineering manager following Elena Rostova\u0027s promotion to VP of Engineering."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 31721584041843067, "label": "Dencun Upgrade activated on Marc...", "shape": "square", "size": 16, "title": "ACTIVE\nDencun Upgrade activated on March 13 2024 introducing Blobspace (EIP-4844 Proto-Danksharding) cutting L2 rollup gas fees by 90%."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 33195507467285374, "label": "Jordan Lee adopted a Golden Retr...", "shape": "square", "size": 16, "title": "ACTIVE\nJordan Lee adopted a Golden Retriever puppy named Atlas."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 43074644496179968, "label": "Uniswap V3 launched in May 2021 ...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nUniswap V3 launched in May 2021 introducing Concentrated Liquidity, customizable fee tiers (0.05%, 0.3%, 1%), and NFT LP positions."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 47720815830923834, "label": "Uniswap V4 introduces Custom Hoo...", "shape": "square", "size": 16, "title": "ACTIVE\nUniswap V4 introduces Custom Hooks, Singleton architecture (all pools in one contract), dynamic fees, and Flash Accounting via EIP-1153 transient storage."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 49928900876517653, "label": "Uniswap V2 launched in May 2020 ...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nUniswap V2 launched in May 2020 enabling direct ERC20-to-ERC20 pairs, on-chain TWAP price oracles, and flash swaps."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 51877411122844815, "label": "On April 4 2023 all $197M of rec...", "shape": "square", "size": 16, "title": "ACTIVE\nOn April 4 2023 all $197M of recoverable stolen assets were returned by the exploiter following on-chain negotiations, and Euler V2 was rebuilt as a modular vault architecture."}, {"color": "#10B981", "font": {"color": "#F3F4F6"}, "id": 56504749497507938, "label": "Marco Rossi and Jordan Lee are p...", "shape": "square", "size": 16, "title": "ACTIVE\nMarco Rossi and Jordan Lee are presenting Project Hydra to CEO Dr. Aris Thorne with benchmark results showing 180ms p99 latency across 10 million graph edges."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 59915919062050362, "label": "Jordan Lee works as a Senior Dis...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nJordan Lee works as a Senior Distributed Systems Engineer at CloudMatrix in Seattle."}, {"color": "#F59E0B", "font": {"color": "#F3F4F6"}, "id": 64876391094155633, "label": "Uniswap V1 launched on Ethereum ...", "shape": "triangle", "size": 16, "title": "HISTORICAL\nUniswap V1 launched on Ethereum Mainnet in November 2018 using constant product formula x*y=k with mandatory ETH trading pairs."}]);
+                  edges = new vis.DataSet([{"color": "rgba(255, 87, 25, 0.4)", "from": 101, "title": "SUBJECT_OF", "to": 201, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 601, "title": "SUBJECT_OF", "to": 701, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 8536449543608327, "title": "SUBJECT_OF", "to": 16992677352275443, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 37791984663832834, "title": "SUBJECT_OF", "to": 19068017423476393, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 37791984663832834, "title": "SUBJECT_OF", "to": 31721584041843067, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 41844686537201618, "title": "SUBJECT_OF", "to": 9217780178634436, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 41844686537201618, "title": "SUBJECT_OF", "to": 51877411122844815, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 47761907353896915, "title": "SUBJECT_OF", "to": 43074644496179968, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 47761907353896915, "title": "SUBJECT_OF", "to": 47720815830923834, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 47761907353896915, "title": "SUBJECT_OF", "to": 49928900876517653, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 47761907353896915, "title": "SUBJECT_OF", "to": 64876391094155633, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 6019829364950655, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 9163764440993685, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 13335438440125996, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 22689460992650779, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 33195507467285374, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 56403495131013397, "title": "SUBJECT_OF", "to": 59915919062050362, "width": 1.5}, {"color": "rgba(255, 87, 25, 0.4)", "from": 57297229393865383, "title": "SUBJECT_OF", "to": 56504749497507938, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 201, "title": "OBJECT_OF", "to": 102, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 6019829364950655, "title": "OBJECT_OF", "to": 22294713072321196, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 9163764440993685, "title": "OBJECT_OF", "to": 8536449543608327, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 9217780178634436, "title": "OBJECT_OF", "to": 6142427084317306, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 13335438440125996, "title": "OBJECT_OF", "to": 9680741720640994, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 16992677352275443, "title": "OBJECT_OF", "to": 59683770234446188, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 19068017423476393, "title": "OBJECT_OF", "to": 1907100296487619, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 22689460992650779, "title": "OBJECT_OF", "to": 57297229393865383, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 31721584041843067, "title": "OBJECT_OF", "to": 66111307550323475, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 33195507467285374, "title": "OBJECT_OF", "to": 66727407251161533, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 43074644496179968, "title": "OBJECT_OF", "to": 70469977004259806, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 47720815830923834, "title": "OBJECT_OF", "to": 28528226976491247, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 49928900876517653, "title": "OBJECT_OF", "to": 15785525016888545, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 51877411122844815, "title": "OBJECT_OF", "to": 6142427084317306, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 56504749497507938, "title": "OBJECT_OF", "to": 60084872961873799, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 59915919062050362, "title": "OBJECT_OF", "to": 48384595790908819, "width": 1.5}, {"color": "rgba(148, 163, 184, 0.4)", "from": 64876391094155633, "title": "OBJECT_OF", "to": 63295968681121920, "width": 1.5}, {"color": "#EF4444", "dashes": true, "from": 991, "title": "SUPERSEDED_BY (upgrade)", "to": 992, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 6019829364950655, "title": "SUPERSEDED_BY (relocation_to_switzerland)", "to": 13335438440125996, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 9163764440993685, "title": "SUPERSEDED_BY (manager_promotion_reassignment)", "to": 22689460992650779, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 9217780178634436, "title": "SUPERSEDED_BY (exploit_resolution_and_v2_pivot)", "to": 51877411122844815, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 43074644496179968, "title": "SUPERSEDED_BY (hooks_singleton_upgrade)", "to": 47720815830923834, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 49928900876517653, "title": "SUPERSEDED_BY (concentrated_liquidity_upgrade)", "to": 43074644496179968, "width": 2.5}, {"color": "#EF4444", "dashes": true, "from": 64876391094155633, "title": "SUPERSEDED_BY (protocol_upgrade)", "to": 49928900876517653, "width": 2.5}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "forceAtlas2Based": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.01,
+            "damping": 0.4,
+            "gravitationalConstant": -60,
+            "springConstant": 0.08,
+            "springLength": 120
+        },
+        "solver": "forceAtlas2Based",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

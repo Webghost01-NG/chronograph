@@ -45,38 +45,54 @@ class QueryAnalyzer:
         return any(cue in q_lower for cue in cue_words)
 
     def _heuristic_entities_keywords(self, question: str) -> tuple[list[str], list[str]]:
-        """Extract capitalized words as entities, other words as keywords."""
+        """Extract capitalized multi-word names and important keywords."""
+        # First try to find multi-word proper nouns (e.g. "Jordan Lee", "Euler Finance")
+        multi_word = re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', question)
+
+        # Then single capitalized words not already captured
+        single_caps = re.findall(r'\b([A-Z][a-z]{2,})\b', question)
+        stop_words = {
+            "What", "Where", "When", "How", "Who", "Why", "Did", "Does",
+            "Was", "Were", "Are", "Has", "Have", "Had", "The", "This",
+            "That", "From", "Before", "After", "Which", "Select",
+        }
+        single_caps = [w for w in single_caps if w not in stop_words]
+
+        # Merge: multi-word names take priority, singles fill in
+        entities = list(multi_word)
+        multi_lower = " ".join(entities).lower()
+        for s in single_caps:
+            if s.lower() not in multi_lower:
+                entities.append(s)
+
+        # Keywords: meaningful lowercase words
         words = re.findall(r"\b\w+\b", question)
-        entities = [
-            w
-            for w in words
-            if w[0].isupper()
-            and w.lower() not in {"what", "where", "when", "how", "who", "why", "did", "is", "was"}
-        ]
+        keyword_stop = {
+            "what", "where", "when", "how", "who", "why", "does", "have",
+            "that", "this", "the", "from", "before", "after", "and", "was",
+            "were", "did", "which", "with", "for", "its", "his", "her",
+        }
         keywords = [
             w.lower()
             for w in words
-            if len(w) > 3
-            and w.lower()
-            not in {"what", "where", "when", "how", "who", "why", "does", "have", "that", "this"}
+            if len(w) > 3 and w.lower() not in keyword_stop
         ]
+
         return entities, keywords
 
     def analyze(self, question: str) -> AnalyzedQuery:
         temporal_cues = [
-            "before",
-            "after",
-            "changed",
-            "used to",
-            "previously",
-            "when did",
-            "earlier",
-            "originally",
+            "before", "after", "changed", "used to", "previously",
+            "when did", "earlier", "originally", "moved", "prior",
         ]
-        comparison_cues = ["compare", "difference", "both", "and", "between", "versus", "vs"]
+        comparison_cues = ["compare", "difference", "both", "between", "versus", "vs"]
+        evolution_cues = ["evolve", "evolution", "from v", "v1", "v2", "v3", "v4", "over time", "history of"]
+        update_cues = ["current", "now", "latest", "new", "replaced", "promoted"]
 
         has_temporal = self._detect_cues(question, temporal_cues)
         has_comparison = self._detect_cues(question, comparison_cues)
+        has_evolution = self._detect_cues(question, evolution_cues)
+        has_update = self._detect_cues(question, update_cues)
 
         prompt = (
             f"Analyze the following question and extract entities and keywords. "
@@ -110,8 +126,13 @@ class QueryAnalyzer:
 
         except Exception as e:
             logger.warning(f"Using heuristic query analyzer: {e}")
+            # Improved heuristic category detection
             if has_temporal:
                 category = QueryCategory.TEMPORAL_REASONING
+            elif has_evolution:
+                category = QueryCategory.MULTI_SESSION_REASONING
+            elif has_update:
+                category = QueryCategory.KNOWLEDGE_UPDATE
             elif has_comparison:
                 category = QueryCategory.MULTI_SESSION_REASONING
             else:
@@ -120,8 +141,10 @@ class QueryAnalyzer:
 
         # Fallback if no entities extracted
         if not entities:
-            h_entities, _ = self._heuristic_entities_keywords(question)
+            h_entities, h_keywords = self._heuristic_entities_keywords(question)
             entities = h_entities or ["User"]
+            if not keywords:
+                keywords = h_keywords
 
         return AnalyzedQuery(
             original=question,

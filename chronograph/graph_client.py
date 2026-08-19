@@ -246,10 +246,16 @@ class HydraClient:
         seen = set()
         all_facts = []
         for r in res_subj + res_obj:
-            if r["id"] not in seen:
-                seen.add(r["id"])
-                if not current_only or r.get("valid_to", -1) == -1:
-                    all_facts.append(r)
+            fid = r.get("id")
+            content = r.get("content")
+            if fid in seen or not content:
+                continue  # skip duplicates and skeleton nodes with no content
+            seen.add(fid)
+            # HydraDB returns None (not -1) for valid_to on current facts
+            vt = r.get("valid_to")
+            is_current = vt is None or vt == -1
+            if not current_only or is_current:
+                all_facts.append(r)
         return all_facts
 
     def find_path_between_entities(
